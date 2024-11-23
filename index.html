@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>mini group</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f1f1f1;
+        }
+
+        .chat-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background-color: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .messages {
+            max-height: 400px;
+            overflow-y: auto;
+            margin-bottom: 20px;
+            border-bottom: 1px solid #ddd;
+            padding-bottom: 10px;
+        }
+
+        .messages p {
+            margin: 0;
+            padding: 5px;
+            border-bottom: 1px solid #f1f1f1;
+        }
+
+        input[type="text"] {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+
+        button {
+            padding: 10px 20px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #45a049;
+        }
+    </style>
+</head>
+<body>
+    <div class="chat-container">
+        <h2 id="chat-title">Make a promotion plan for our new shampoo product on tiktok.</h2>
+        <div class="messages" id="messages">
+        </div>
+        <input type="text" id="username" placeholder="your name ...">
+        <input type="text" id="messageInput" placeholder="comment ...">
+        <button onclick="sendMessage()">send</button>
+    </div>
+
+    <script>
+        const socket = new WebSocket("ws://localhost:8765");
+
+        const messagesDiv = document.getElementById("messages");
+        const username = document.getElementById("username");
+        const messageInput = document.getElementById("messageInput");
+
+        socket.onopen = function() {
+            console.log("connection established");
+        };
+
+        socket.onmessage = function(event) {
+            const message = event.data;
+            displayMessage(message);
+        };
+
+        socket.onclose = function() {
+            console.log("connection closed");
+        };
+
+        function sendMessage() {
+            const data = {
+                'username': username.value,
+                'comment': messageInput.value,
+            };
+            if (data['comment']) {
+                socket.send(JSON.stringify(data));
+                messageInput.value = '';
+            }
+        }
+
+        function displayMessage(message) {
+            const messageElement = document.createElement("p");
+            messageElement.textContent = message;
+            messagesDiv.appendChild(messageElement);
+            messagesDiv.scrollTop = messagesDiv.scrollHeight;
+        }
+
+        messageInput.addEventListener("keypress", function(event) {
+            if (event.key === "Enter") {
+                event.preventDefault();
+                sendMessage();
+            }
+        });
+    </script>
+</body>
+</html>
+
